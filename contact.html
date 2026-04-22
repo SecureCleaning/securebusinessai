@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact | Secure Business AI</title>
+    <meta
+      name="description"
+      content="Contact Secure Business AI about websites, AI chatbots, voice reception, or the best place to start."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="/">Secure Business AI</a>
+        <nav>
+          <a href="/#services">Services</a>
+          <a href="/#how">How It Works</a>
+          <a href="/#pricing">Pricing</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero contact-hero">
+        <div class="container contact-hero-grid">
+          <div>
+            <p class="eyebrow">Contact us</p>
+            <h1>Tell us what you need help with.</h1>
+            <p class="hero-copy">
+              Send an enquiry about websites, AI chatbots, voice reception, or the best place to start.
+              We’ll route it to the right next step.
+            </p>
+            <div class="hero-points">
+              <span>Website review enquiries</span>
+              <span>Chatbot and voice questions</span>
+              <span>General small business AI advice</span>
+            </div>
+            <p class="microcopy">
+              Enquiries from this form are sent to <strong>info@securebusinessai.com.au</strong>.
+            </p>
+          </div>
+
+          <div class="contact-card">
+            <form id="contactForm" class="contact-form">
+              <div class="form-row two-up">
+                <label>
+                  <span>Name</span>
+                  <input type="text" name="name" autocomplete="name" required />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input type="email" name="email" autocomplete="email" required />
+                </label>
+              </div>
+
+              <label>
+                <span>Business name</span>
+                <input type="text" name="business" autocomplete="organization" />
+              </label>
+
+              <label>
+                <span>What are you interested in?</span>
+                <select name="service" required>
+                  <option value="">Choose one</option>
+                  <option>AI Website Review</option>
+                  <option>AI Business Starter Pack</option>
+                  <option>AI Voice Receptionist</option>
+                  <option>Website + AI Chatbot</option>
+                  <option>AI Business Bundle</option>
+                  <option>Not sure yet</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Message</span>
+                <textarea name="message" rows="7" placeholder="Tell us a bit about what you need help with." required></textarea>
+              </label>
+
+              <input type="text" name="company_website" class="hidden-field" tabindex="-1" autocomplete="off" />
+
+              <div class="form-actions">
+                <button type="submit" class="button primary">Send enquiry</button>
+                <p class="form-note">We’ll send this to info@securebusinessai.com.au.</p>
+              </div>
+
+              <p id="formStatus" class="form-status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById('contactForm');
+      const statusEl = document.getElementById('formStatus');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        statusEl.textContent = 'Sending...';
+        statusEl.className = 'form-status';
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Something went wrong.');
+          }
+
+          form.reset();
+          statusEl.textContent = 'Thanks, your enquiry has been sent.';
+          statusEl.className = 'form-status success';
+        } catch (error) {
+          statusEl.textContent = error.message || 'Sorry, your enquiry could not be sent right now.';
+          statusEl.className = 'form-status error';
+        }
+      });
+    </script>
+  </body>
+</html>
