@@ -127,8 +127,11 @@
           form.reset();
           statusEl.textContent = 'Thanks, your enquiry has been sent.';
           statusEl.className = 'form-status success';
+          setTimeout(() => {
+            window.location.href = '/contact-success';
+          }, 700);
         } catch (error) {
-          statusEl.textContent = error.message || 'Sorry, your enquiry could not be sent right now.';
+          statusEl.textContent = (error.message || 'Sorry, your enquiry could not be sent right now.') + ' If needed, email info@securebusinessai.com.au directly.';
           statusEl.className = 'form-status error';
         }
       });

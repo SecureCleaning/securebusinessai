@@ -386,6 +386,17 @@ h1 {
 }
 .form-status.success { color: #18794e; }
 .form-status.error { color: #c23b3b; }
+.thankyou-wrap {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+.thankyou-card {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 34px;
+  box-shadow: var(--shadow);
+}
 
 @media (max-width: 640px) {
   .hero { padding-top: 42px; }
