@@ -45,7 +45,7 @@
               <span>General small business AI advice</span>
             </div>
             <p class="microcopy">
-              Enquiries from this form are sent to <strong>info@securebusinessai.com.au</strong>.
+              Tell us what you need help with and we’ll route it to the right next step.
             </p>
           </div>
 
@@ -89,7 +89,7 @@
 
               <div class="form-actions">
                 <button type="submit" class="button primary">Send enquiry</button>
-                <p class="form-note">We’ll send this to info@securebusinessai.com.au.</p>
+                <p class="form-note">We’ll review your enquiry and get back to you shortly.</p>
               </div>
 
               <p id="formStatus" class="form-status" aria-live="polite"></p>
@@ -131,7 +131,7 @@
             window.location.href = '/contact-success';
           }, 700);
         } catch (error) {
-          statusEl.textContent = (error.message || 'Sorry, your enquiry could not be sent right now.') + ' If needed, email info@securebusinessai.com.au directly.';
+          statusEl.textContent = error.message || 'Sorry, your enquiry could not be sent right now. Please try again shortly.';
           statusEl.className = 'form-status error';
         }
       });
