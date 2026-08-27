@@ -5,8 +5,10 @@
 
 const crypto = require('node:crypto');
 const { configured, supabase } = require('./_lib/ai-readiness');
+const { buildStarterGuideEmail, sendResendEmail } = require('./_lib/starter-guide-email');
 
 const ORDERS_TABLE = 'ai_readiness_orders';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function parseBody(body) {
   if (typeof body !== 'string') return body || {};
@@ -35,10 +37,24 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: 'Incorrect password.' });
   }
 
-  const { action } = parseBody(req.body);
+  const body = parseBody(req.body);
+  const { action } = body;
 
   try {
     if (action === 'login') return res.status(200).json({ ok: true });
+
+    if (action === 'send_sample') {
+      // Email the real Starter Guide PDF (the exact buyer deliverable) to an
+      // address of the owner's choosing, so they can preview or re-send it.
+      if (!process.env.RESEND_API_KEY) {
+        return res.status(503).json({ error: 'Email sending is not configured.' });
+      }
+      const email = String(body.email || '').trim();
+      if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+      const response = await sendResendEmail(buildStarterGuideEmail(email, ''));
+      if (!response.ok) return res.status(502).json({ error: 'The email could not be sent.' });
+      return res.status(200).json({ ok: true, sentTo: email });
+    }
 
     if (action === 'list') {
       const rows = await supabase(

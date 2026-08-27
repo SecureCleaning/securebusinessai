@@ -1,6 +1,6 @@
 const crypto = require('node:crypto');
 const { configured, supabase, hashToken, newAccessToken, SUPABASE_TABLE } = require('./_lib/ai-readiness');
-const starterGuidePdf = require('./_lib/starter-guide-pdf');
+const { buildStarterGuideEmail } = require('./_lib/starter-guide-email');
 
 const FROM_EMAIL = 'Secure Business AI <website@securebusinessai.com.au>';
 const DESTINATION_EMAIL = 'info@securebusinessai.com.au';
@@ -18,11 +18,6 @@ function customerEmailHtml(name, link) {
   return `<!doctype html><html><body style="margin:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#14253d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="padding:28px 36px;background:#0b4c5c"><img src="https://securebusinessai.com.au/assets/secure-business-ai-horizontal.png" width="230" alt="Secure Business AI" style="display:block;max-width:230px;height:auto" /></td></tr><tr><td style="padding:36px"><p style="margin:0 0 12px;font-size:13px;font-weight:bold;letter-spacing:1px;color:#2f74ff">AI READINESS PACK</p><h1 style="margin:0 0 18px;font-size:28px;line-height:1.2;color:#14253d">Your payment is confirmed.</h1><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Hi ${safeName},</p><p style="margin:0 0 24px;font-size:16px;line-height:1.6">Thank you for choosing Secure Business AI. Your private online workspace is ready for you to review the public website information we found and add anything missing.</p><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:6px;background:#2f74ff"><a href="${safeLink}" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none">Open your private details page</a></td></tr></table><p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#516277">This secure link expires in 14 days. Please do not send passwords, payment information, or website login details.</p></td></tr><tr><td style="padding:20px 36px;background:#eef4f7;font-size:13px;line-height:1.5;color:#516277">Secure Business AI<br />Practical, secure AI support for Australian small businesses.</td></tr></table></td></tr></table></body></html>`;
 }
 
-function starterGuideEmailHtml(name) {
-  const safeName = escapeHtml(name || 'there');
-  return `<!doctype html><html><body style="margin:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#14253d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="padding:28px 36px;background:#0b4c5c"><img src="https://securebusinessai.com.au/assets/secure-business-ai-horizontal.png" width="230" alt="Secure Business AI" style="display:block;max-width:230px;height:auto" /></td></tr><tr><td style="padding:36px"><p style="margin:0 0 12px;font-size:13px;font-weight:bold;letter-spacing:1px;color:#2f74ff">AI STARTER GUIDE</p><h1 style="margin:0 0 18px;font-size:28px;line-height:1.2;color:#14253d">Your guide is attached.</h1><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Hi ${safeName},</p><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Thank you for your purchase. Your <strong>AI Starter Guide</strong> is attached to this email as a PDF, ready to read on any device.</p><p style="margin:0 0 24px;font-size:16px;line-height:1.6">A good way to use it: read it once end to end, then use the Opportunity Map and Self-Assessment Checklist near the back to turn it into a shortlist of practical next steps for your business.</p><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:6px;background:#2f74ff"><a href="https://securebusinessai.com.au/ai-website-review" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none">See where your website is leaking enquiries</a></td></tr></table><p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#516277">If the attachment does not open, reply to this email and we will send it another way.</p></td></tr><tr><td style="padding:20px 36px;background:#eef4f7;font-size:13px;line-height:1.5;color:#516277">Secure Business AI<br />Practical, secure AI support for Australian small businesses.</td></tr></table></td></tr></table></body></html>`;
-}
-
 // Deliver the fixed Starter Guide PDF for a paid $47 checkout. Idempotent: a
 // row in starter_guide_orders marks delivery, so a Stripe retry will not send a
 // second copy. The customer email is the critical step; if it fails we throw so
@@ -38,15 +33,7 @@ async function deliverStarterGuide(session, res) {
   );
   if (existing.length && existing[0].delivered_at) return res.status(200).json({ received: true });
 
-  const emailResponse = await sendEmail({
-    from: FROM_EMAIL,
-    to: [customerEmail],
-    reply_to: DESTINATION_EMAIL,
-    subject: 'Your AI Starter Guide (PDF attached)',
-    text: `Hi ${customerName || 'there'},\n\nThank you for your purchase. Your AI Starter Guide is attached to this email as a PDF.\n\nA good way to use it: read it once end to end, then use the Opportunity Map and Self-Assessment Checklist near the back to turn it into a shortlist of practical next steps for your business.\n\nIf the attachment does not open, reply to this email and we will send it another way.\n\nSecure Business AI\nhttps://securebusinessai.com.au`,
-    html: starterGuideEmailHtml(customerName),
-    attachments: [{ filename: starterGuidePdf.filename, content: starterGuidePdf.base64 }],
-  });
+  const emailResponse = await sendEmail(buildStarterGuideEmail(customerEmail, customerName));
   if (!emailResponse.ok) throw new Error('Starter Guide email failed');
 
   // Record the sale and mark delivered (upsert on the session id primary key).
