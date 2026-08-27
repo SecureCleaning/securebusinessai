@@ -1,0 +1,52 @@
+{
+  "@context": "https://schema.org",
+  "@type": [
+    "LocalBusiness",
+    "ProfessionalService"
+  ],
+  "name": "Cleaning Works",
+  "url": "https://cleaningworks.com.au/",
+  "telephone": "1300 810 306",
+  "email": "info@cleaningworks.com.au",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "19/1330 Ferntree Gully Road",
+    "addressLocality": "Scoresby",
+    "addressRegion": "VIC",
+    "postalCode": "3179",
+    "addressCountry": "AU"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Cleaning Works Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Builders Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Carpet Steam Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Childcare Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Curtain Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "De-Greasing" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Dry Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Emergency Cleaning Services" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Equipment Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Event Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Factory Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Glass Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Green Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Gym Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "House Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Office Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Pet Friendly Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Pressure Washing" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Retail Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Rubbish Disposal" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "School Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Spring Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Stain Removal" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Steam Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Stripping and Polishing" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Upholstery Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Vacate / Lease Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Window Cleaning" } }
+    ]
+  }
+}

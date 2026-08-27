@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /development
+
+Sitemap: https://securebusinessai.com.au/sitemap.xml

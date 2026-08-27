@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Admin | Secure Business AI</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .admin-wrap { width: min(860px, calc(100% - 32px)); margin: 40px auto; }
+      .admin-card { background: rgba(255,255,255,0.95); border: 1px solid var(--line); border-radius: 20px; padding: 26px; box-shadow: var(--shadow); }
+      .admin-field { display: grid; gap: 8px; margin-bottom: 18px; }
+      .admin-field label { font-size: 13px; font-weight: 700; color: var(--muted); }
+      .admin-field .badge { display: inline-block; margin-right: 8px; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-dark); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+      .admin-field input, .admin-field select, .admin-field textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font: inherit; color: var(--text); background: #fff; }
+      .admin-field textarea { min-height: 70px; resize: vertical; }
+      .admin-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+      .admin-bar { position: sticky; top: 0; background: rgba(255,255,255,0.96); padding: 14px 0; margin: -8px 0 16px; border-bottom: 1px solid var(--line); z-index: 5; }
+      .admin-status { font-size: 14px; color: var(--muted); min-height: 20px; margin: 0; }
+      .admin-status.success { color: #18794e; }
+      .admin-status.error { color: #c23b3b; }
+      .admin-hint { color: var(--muted); font-size: 14px; line-height: 1.6; }
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="/" aria-label="Secure Business AI home"><img src="./assets/secure-business-ai-horizontal.png" alt="Secure Business AI" /></a>
+        <nav><a href="/">Back to site</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="admin-wrap">
+        <section id="loginCard" class="admin-card">
+          <p class="eyebrow">Content Admin</p>
+          <h1 style="font-size:2rem;margin:0 0 10px;">Edit your website copy.</h1>
+          <p class="admin-hint">Enter the admin password to edit page content. Changes save to your content store and appear on the live site within about a minute.</p>
+          <form id="loginForm" class="admin-field" style="margin-top:16px;">
+            <label for="password">Admin password</label>
+            <input type="password" id="password" autocomplete="current-password" required />
+            <div class="admin-row">
+              <button type="submit" class="button primary">Sign in</button>
+              <p id="loginStatus" class="admin-status" aria-live="polite"></p>
+            </div>
+          </form>
+        </section>
+
+        <section id="editorCard" class="admin-card hidden">
+          <div class="admin-bar">
+            <div class="admin-row" style="justify-content:space-between;">
+              <div class="admin-row" style="gap:10px;">
+                <strong>Editing:</strong>
+                <select id="pageSelect"></select>
+              </div>
+              <div class="admin-row">
+                <button type="button" id="saveBtn" class="button primary">Save page</button>
+                <button type="button" id="logoutBtn" class="button secondary">Sign out</button>
+              </div>
+            </div>
+            <p id="editStatus" class="admin-status" style="margin-top:8px;" aria-live="polite"></p>
+          </div>
+
+          <div id="fields"></div>
+          <p class="admin-hint">Leave a field blank to keep the page's built-in default (shown as the placeholder). Saving a blank field reverts it to the default.</p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      var PAGES = [
+        { slug: 'index', label: 'Home' },
+        { slug: 'services', label: 'Services' },
+        { slug: 'pricing', label: 'Pricing' },
+        { slug: 'ai-starter-guide', label: 'AI Starter Guide' },
+        { slug: 'ai-readiness-pack', label: 'AI Readiness Pack' },
+        { slug: 'ai-website-review', label: 'AI Website Review' },
+        { slug: 'secure-ai-onboarding', label: 'Secure AI Onboarding' },
+        { slug: 'ai-voice-receptionist', label: 'AI Voice Receptionist' },
+        { slug: 'website-ai-chatbot', label: 'Website + AI Chatbot' },
+        { slug: 'ai-business-bundle', label: 'AI Business Bundle' },
+        { slug: 'about', label: 'About' },
+        { slug: 'privacy', label: 'Privacy Policy' },
+        { slug: 'terms', label: 'Terms & Refunds' },
+        { slug: 'contact', label: 'Contact' }
+      ];
+
+      var PW = '';
+      var store = {}; // "slug|key" -> content
+
+      var loginCard = document.getElementById('loginCard');
+      var editorCard = document.getElementById('editorCard');
+      var loginForm = document.getElementById('loginForm');
+      var loginStatus = document.getElementById('loginStatus');
+      var editStatus = document.getElementById('editStatus');
+      var pageSelect = document.getElementById('pageSelect');
+      var fieldsEl = document.getElementById('fields');
+
+      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function collapse(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
+
+      function api(action, extra) {
+        return fetch('/api/admin-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PW },
+          body: JSON.stringify(Object.assign({ action: action }, extra || {}))
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+      }
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        PW = document.getElementById('password').value;
+        loginStatus.textContent = 'Checking...';
+        loginStatus.className = 'admin-status';
+        api('login').then(function (res) {
+          if (!res.ok) { loginStatus.textContent = (res.data && res.data.error) || 'Sign in failed.'; loginStatus.className = 'admin-status error'; PW = ''; return; }
+          return api('list').then(function (r2) {
+            store = {};
+            ((r2.data && r2.data.items) || []).forEach(function (row) { store[row.page + '|' + row.section_key] = row.content; });
+            buildPageSelect();
+            loginCard.classList.add('hidden');
+            editorCard.classList.remove('hidden');
+            loadPage();
+          });
+        }).catch(function () { loginStatus.textContent = 'Something went wrong.'; loginStatus.className = 'admin-status error'; });
+      });
+
+      function buildPageSelect() {
+        pageSelect.innerHTML = PAGES.map(function (p) { return '<option value="' + p.slug + '">' + p.label + '</option>'; }).join('');
+      }
+
+      function loadPage() {
+        var slug = pageSelect.value || PAGES[0].slug;
+        editStatus.textContent = 'Loading page...';
+        editStatus.className = 'admin-status';
+        fieldsEl.innerHTML = '';
+        fetch(slug === 'index' ? '/' : '/' + slug, { cache: 'no-store' })
+          .then(function (r) { return r.text(); })
+          .then(function (html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var nodes = doc.querySelectorAll('[data-cc]');
+            if (!nodes.length) { fieldsEl.innerHTML = '<p class="admin-hint">No editable blocks found on this page.</p>'; editStatus.textContent = ''; return; }
+            var out = [];
+            nodes.forEach(function (el) {
+              var key = el.getAttribute('data-cc');
+              var tag = el.tagName.toLowerCase();
+              var def = collapse(el.textContent);
+              var saved = store[slug + '|' + key];
+              var val = (saved != null) ? saved : '';
+              var short = def.length > 90 ? def.slice(0, 90) + '…' : def;
+              out.push(
+                '<div class="admin-field">' +
+                  '<label for="f_' + key + '"><span class="badge">' + tag + '</span>' + esc(short) + '</label>' +
+                  '<textarea id="f_' + key + '" data-key="' + key + '" rows="2" placeholder="' + esc(def) + '">' + esc(val) + '</textarea>' +
+                '</div>'
+              );
+            });
+            fieldsEl.innerHTML = out.join('');
+            editStatus.textContent = nodes.length + ' editable blocks';
+            editStatus.className = 'admin-status';
+          })
+          .catch(function () { editStatus.textContent = 'Could not load this page.'; editStatus.className = 'admin-status error'; });
+      }
+
+      pageSelect.addEventListener('change', loadPage);
+
+      document.getElementById('saveBtn').addEventListener('click', function () {
+        var slug = pageSelect.value;
+        var items = [];
+        fieldsEl.querySelectorAll('[data-key]').forEach(function (el) {
+          items.push({ page: slug, section_key: el.getAttribute('data-key'), content: el.value.trim() });
+        });
+        editStatus.textContent = 'Saving...';
+        editStatus.className = 'admin-status';
+        api('save', { items: items }).then(function (res) {
+          if (!res.ok) { editStatus.textContent = (res.data && res.data.error) || 'Save failed.'; editStatus.className = 'admin-status error'; return; }
+          items.forEach(function (i) {
+            if (i.content) store[i.page + '|' + i.section_key] = i.content;
+            else delete store[i.page + '|' + i.section_key];
+          });
+          editStatus.textContent = 'Saved. Live in about a minute.';
+          editStatus.className = 'admin-status success';
+        }).catch(function () { editStatus.textContent = 'Something went wrong.'; editStatus.className = 'admin-status error'; });
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', function () {
+        PW = ''; store = {};
+        editorCard.classList.add('hidden');
+        loginCard.classList.remove('hidden');
+        document.getElementById('password').value = '';
+        loginStatus.textContent = '';
+      });
+    </script>
+  </body>
+</html>

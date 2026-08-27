@@ -1,0 +1,18 @@
+{
+  "name": "secure-business-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static Secure Business AI lead-gen site with a Vercel contact API.",
+  "packageManager": "npm@11.11.0",
+  "scripts": {
+    "dev": "npx --yes vercel@latest dev --listen 3000",
+    "dev:static": "python3 -m http.server 3000",
+    "lint": "node --check api/contact.js && node --check api/review-checkout.js && node --check api/review-intake.js && node --check api/starter-guide-checkout.js && node --check api/ai-readiness-checkout.js && node --check api/ai-readiness-intake.js && node --check api/ai-readiness-start.js && node --check api/ai-readiness-order.js && node --check api/stripe-webhook.js && node --check api/_lib/ai-readiness.js && node --check api/_lib/readiness-pack.js && node --check api/content.js && node --check api/admin-content.js && node --check api/admin-orders.js && node --check content-overrides.js && node --check chatbot.js && node scripts/validate-site.js",
+    "test": "node scripts/test-contact-api.js",
+    "build": "node scripts/build-static.js",
+    "deploy": "npm run lint && npm test && npm run build && npx --yes vercel@latest deploy --prod --yes"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

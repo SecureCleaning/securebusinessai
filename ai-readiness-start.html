@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Start Your AI Readiness Pack | Secure Business AI</title>
+    <meta name="description" content="Start an AI Readiness Pack with a quick public website scan before secure Stripe payment." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header"><div class="container nav"><a class="brand" href="/" aria-label="Secure Business AI home"><img src="./assets/secure-business-ai-horizontal.png" alt="Secure Business AI" /></a><nav><a href="/services">Services</a><a href="/#how">How It Works</a><a href="/pricing">Pricing</a><a href="/ai-starter-guide">Starter Guide</a><a href="/ai-readiness-pack">AI Readiness</a><a href="/ai-website-review">Website Review</a><a href="/contact">Contact</a></nav></div></header>
+    <main><section class="hero contact-hero"><div class="container contact-hero-grid"><div><p class="eyebrow">Start your pack</p><h1>Tell us the basics. We will check the public website first.</h1><p class="hero-copy">Enter four details and we will create a draft record and check the relevant public pages before sending you to secure $495 Stripe checkout.</p><div class="hero-points"><span>Public website scan</span><span>Simple draft record</span><span>Secure Stripe payment</span></div></div><div class="contact-card"><form id="startForm" class="contact-form"><div class="form-row two-up"><label><span>Name</span><input name="name" autocomplete="name" required /></label><label><span>Email</span><input name="email" type="email" autocomplete="email" required /></label></div><label><span>Business name</span><input name="business" autocomplete="organization" required /></label><label><span>Website URL</span><input name="website" type="text" inputmode="url" placeholder="example.com.au" required /></label><input name="company_website" class="hidden-field" tabindex="-1" autocomplete="off" /><div class="form-actions"><button class="button primary" type="submit">Check website</button><p class="form-note">Enter a website address such as example.com.au. We only scan public pages.</p></div><p id="formStatus" class="form-status" aria-live="polite"></p></form><div id="scanPreview" hidden><p class="eyebrow">Public website check</p><h2 id="scanTitle"></h2><p id="scanDescription"></p><ul id="scanList"></ul><div class="cta-row"><button id="payButton" class="button primary" type="button">Continue to secure payment - $495</button><button id="editButton" class="button secondary" type="button">Edit details</button></div></div></div></div></section></main>
+    <footer class="site-footer"><div class="container footer-grid"><div class="footer-brand"><img src="./assets/secure-business-ai-horizontal.png" alt="Secure Business AI" /><p>Practical AI support for small businesses that want clearer customer response, stronger lead capture, and less admin friction.</p><p class="footer-meta">Melbourne-first service for Australian small businesses.</p></div><div><h2>Services</h2><a href="/ai-starter-guide">AI Starter Guide</a><a href="/ai-readiness-pack">AI Readiness Pack</a><a href="/ai-website-review">AI Website Review</a></div><div><h2>Company</h2><a href="/">Home</a><a href="/services">Services</a><a href="/#how">How It Works</a><a href="/pricing">Pricing</a><a href="/contact">Contact</a></div><div><h2>Get Started</h2><p>Start with the guide, book a website review, or send an enquiry about the right AI setup for your business.</p><a class="footer-button" href="/contact">Send an Enquiry</a><div class="footer-chat-card"><strong>AI-readable by design</strong><span>Clear business facts make it easier for people and AI tools to understand your offer.</span></div></div></div><div class="footer-bottom"><div class="container footer-bottom-inner"><p>&copy; 2026 Secure Business AI. All rights reserved. Secure Contracts Pty Ltd &middot; ABN 81 674 121 825.</p><div><a href="/ai-starter-guide">Starter Guide</a><a href="/ai-readiness-pack">AI Readiness</a><a href="/ai-website-review">Website Review</a><a href="/contact">Contact</a></div></div></div></footer>
+    <script>
+      const form = document.getElementById('startForm');
+      const statusEl = document.getElementById('formStatus');
+      let checkoutUrl = '';
+      function addFact(text) { const item = document.createElement('li'); item.textContent = text; document.getElementById('scanList').appendChild(item); }
+      function showScan(scan) {
+        const pages = scan.pagesScanned?.length || 1;
+        const services = scan.services || [];
+        const contact = scan.contact || {};
+        const address = contact.address || {};
+        document.getElementById('scanTitle').textContent = scan.pageTitle || 'We checked your public website';
+        document.getElementById('scanDescription').textContent = `${pages === 1 ? 'We checked the homepage.' : `We checked ${pages} relevant public pages.`} ${scan.description || 'We will use the public information we found as a starting point for your editable business brief.'}`;
+        const list = document.getElementById('scanList'); list.replaceChildren();
+        addFact(`${pages === 1 ? 'One public page was checked' : `${pages} public pages were checked`} for customer-facing information.`);
+        if (services.length) addFact(`Found ${services.length} possible service${services.length === 1 ? '' : 's'} to review with you${services.length > 1 ? `, including ${services.slice(0, 3).join(', ')}` : ''}.`);
+        if (contact.phone) addFact('Found a public phone number we will pre-fill in your form.');
+        if (contact.email) addFact('Found a public email address we will pre-fill in your form.');
+        if (address.line1 || address.suburb) addFact('Found a public business address or service location we will pre-fill in your form.');
+        if (!services.length && !contact.email && !contact.phone && !address.line1 && !address.suburb) addFact('There is limited public business information to reuse, so your private workspace will guide you through the important details.');
+        addFact('After payment, you can check, correct, and add to everything we found above, plus more, before we prepare your pack.');
+      }
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault(); statusEl.textContent = 'Checking your public website...'; statusEl.className = 'form-status';
+        try {
+          const response = await fetch('/api/ai-readiness-start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) });
+          const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'Something went wrong.');
+          checkoutUrl = data.checkoutUrl; showScan(data.scan || {}); statusEl.textContent = 'Website check complete. Review the results below.'; statusEl.className = 'form-status success'; form.hidden = true; document.getElementById('scanPreview').hidden = false;
+        } catch (error) { statusEl.textContent = error.message || 'Sorry, we could not start checkout.'; statusEl.className = 'form-status error'; }
+      });
+      document.getElementById('payButton').addEventListener('click', () => location.assign(checkoutUrl));
+      document.getElementById('editButton').addEventListener('click', () => { document.getElementById('scanPreview').hidden = true; form.hidden = false; statusEl.textContent = ''; statusEl.className = 'form-status'; });
+    </script><script src="./content-overrides.js" defer></script><script src="./chatbot.js" defer></script>
+  </body>
+</html>

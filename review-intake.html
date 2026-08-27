@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review Intake | Secure Business AI</title>
+    <meta name="description" content="Submit AI Website Review intake details to Secure Business AI." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="/" aria-label="Secure Business AI home"><img src="./assets/secure-business-ai-horizontal.png" alt="Secure Business AI" /></a>
+        <nav>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">Products</button>
+            <div class="nav-dropdown-menu">
+              <a href="/ai-starter-guide">AI Starter Guide</a>
+              <a href="/ai-readiness-pack">AI Readiness Pack</a>
+              <a href="/ai-website-review">AI Website Review</a>
+              <a href="/secure-ai-onboarding">Secure AI Onboarding</a>
+              <a href="/ai-voice-receptionist">AI Voice Receptionist</a>
+              <a href="/website-ai-chatbot">Website + AI Chatbot</a>
+              <a href="/ai-business-bundle">AI Business Bundle</a>
+            </div>
+          </div>
+          <a href="/services">Services</a>
+          <a href="/#how">How It Works</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero contact-hero">
+        <div class="container contact-hero-grid">
+          <div>
+            <p class="eyebrow">Review intake</p>
+            <h1>Send the details we need for your AI Website Review.</h1>
+            <p class="hero-copy">
+              This short form gives us the business context, website URL, and priorities needed to generate a useful
+              report with minimal back-and-forth.
+            </p>
+            <div class="hero-points">
+              <span>Website URL</span>
+              <span>Business goals</span>
+              <span>Current lead and AI priorities</span>
+            </div>
+          </div>
+
+          <div class="contact-card">
+            <form id="reviewIntakeForm" class="contact-form">
+              <div class="form-row two-up">
+                <label>
+                  <span>Name</span>
+                  <input type="text" name="name" autocomplete="name" required />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input type="email" name="email" autocomplete="email" required />
+                </label>
+              </div>
+
+              <label>
+                <span>Business name</span>
+                <input type="text" name="business" autocomplete="organization" required />
+              </label>
+
+              <label>
+                <span>Website URL</span>
+                <input type="url" name="website" placeholder="https://example.com" required />
+              </label>
+
+              <label>
+                <span>What matters most right now?</span>
+                <select name="priority" required>
+                  <option value="">Choose one</option>
+                  <option>More enquiries from the website</option>
+                  <option>Better local SEO and AI visibility</option>
+                  <option>AI chatbot or voice receptionist options</option>
+                  <option>Better offer and pricing clarity</option>
+                  <option>Not sure yet</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Anything specific we should look for?</span>
+                <textarea name="notes" rows="7" placeholder="Tell us about your current website, lead flow, competitors, or AI goals."></textarea>
+              </label>
+
+              <input type="text" name="company_website" class="hidden-field" tabindex="-1" autocomplete="off" />
+
+              <div class="form-actions">
+                <button type="submit" class="button primary">Submit intake</button>
+                <p class="form-note">We will use this to prepare your editable draft report.</p>
+              </div>
+
+              <p id="formStatus" class="form-status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <img src="./assets/secure-business-ai-horizontal.png" alt="Secure Business AI" />
+          <p>Practical AI support for small businesses that want clearer customer response, stronger lead capture, and less admin friction.</p>
+          <p class="footer-meta">Melbourne-first service for Australian small businesses.</p>
+        </div>
+        <div>
+          <h2>Services</h2>
+          <a href="/ai-starter-guide">AI Starter Guide</a>
+          <a href="/ai-readiness-pack">AI Readiness Pack</a>
+          <a href="/ai-website-review">AI Website Review</a>
+          <a href="/ai-voice-receptionist">AI Voice Receptionist</a>
+          <a href="/website-ai-chatbot">Website + AI Chatbot</a>
+          <a href="/ai-business-bundle">AI Business Bundle</a>
+        </div>
+        <div>
+          <h2>Company</h2>
+          <a href="/">Home</a>
+          <a href="/services">Services</a>
+          <a href="/#how">How It Works</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/contact">Contact</a>
+        </div>
+        <div>
+          <h2>Get Started</h2>
+          <p>Start with the guide, book a website review, or send an enquiry about the right AI setup for your business.</p>
+          <a class="footer-button" href="/contact">Send an Enquiry</a>
+          <div class="footer-chat-card">
+            <strong>Chat with Secure AI</strong>
+            <span>Ask about guides, reviews, chatbots, voice reception, and next steps.</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+          <p>&copy; 2026 Secure Business AI. All rights reserved. Secure Contracts Pty Ltd &middot; ABN 81 674 121 825.</p>
+          <div>
+            <a href="/about">About</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+          </div>
+          <div>
+            <a href="/ai-starter-guide">Starter Guide</a>
+          <a href="/ai-readiness-pack">AI Readiness</a>
+            <a href="/ai-website-review">Website Review</a>
+            <a href="/contact">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const form = document.getElementById('reviewIntakeForm');
+      const statusEl = document.getElementById('formStatus');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        statusEl.textContent = 'Submitting...';
+        statusEl.className = 'form-status';
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch('/api/review-intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Something went wrong.');
+          }
+
+          form.reset();
+          statusEl.textContent = 'Thanks, your intake has been submitted.';
+          statusEl.className = 'form-status success';
+          setTimeout(() => {
+            window.location.href = '/review-intake-success';
+          }, 700);
+        } catch (error) {
+          statusEl.textContent = error.message || 'Sorry, your intake could not be submitted right now.';
+          statusEl.className = 'form-status error';
+        }
+      });
+    </script>
+    <script src="./content-overrides.js" defer></script><script src="./chatbot.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+Sanitized git metadata captured from VPS
+
+[git status --short]
+?? CODEX_HANDOFF.md
+
+[git branch --show-current]
+main
+
+[git remote -v]
+origin	https://github.com/SecureCleaning/securebusinessai.git (fetch)
+origin	https://github.com/SecureCleaning/securebusinessai.git (push)
+
+[git log -5 --oneline]
+b45151b Harden contact delivery and add auto-reply
+5d2fcbf Improve contact success flow
+59acc16 Add contact page and enquiry form
+99d58d2 Improve homepage conversion and pricing clarity
+a114b96 Add initial Secure Business AI preview site
