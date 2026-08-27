@@ -1,9 +1,12 @@
 const crypto = require('node:crypto');
 const { configured, supabase, hashToken, newAccessToken, SUPABASE_TABLE } = require('./_lib/ai-readiness');
+const starterGuidePdf = require('./_lib/starter-guide-pdf');
 
 const FROM_EMAIL = 'Secure Business AI <website@securebusinessai.com.au>';
 const DESTINATION_EMAIL = 'info@securebusinessai.com.au';
 const DEFAULT_SITE_URL = 'https://securebusinessai.com.au';
+const STARTER_GUIDE_TABLE = 'starter_guide_orders';
+const STARTER_GUIDE_AMOUNT = 4700; // $47 AUD, used only as a fallback identifier
 
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
@@ -13,6 +16,68 @@ function customerEmailHtml(name, link) {
   const safeName = escapeHtml(name || 'there');
   const safeLink = escapeHtml(link);
   return `<!doctype html><html><body style="margin:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#14253d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="padding:28px 36px;background:#0b4c5c"><img src="https://securebusinessai.com.au/assets/secure-business-ai-horizontal.png" width="230" alt="Secure Business AI" style="display:block;max-width:230px;height:auto" /></td></tr><tr><td style="padding:36px"><p style="margin:0 0 12px;font-size:13px;font-weight:bold;letter-spacing:1px;color:#2f74ff">AI READINESS PACK</p><h1 style="margin:0 0 18px;font-size:28px;line-height:1.2;color:#14253d">Your payment is confirmed.</h1><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Hi ${safeName},</p><p style="margin:0 0 24px;font-size:16px;line-height:1.6">Thank you for choosing Secure Business AI. Your private online workspace is ready for you to review the public website information we found and add anything missing.</p><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:6px;background:#2f74ff"><a href="${safeLink}" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none">Open your private details page</a></td></tr></table><p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#516277">This secure link expires in 14 days. Please do not send passwords, payment information, or website login details.</p></td></tr><tr><td style="padding:20px 36px;background:#eef4f7;font-size:13px;line-height:1.5;color:#516277">Secure Business AI<br />Practical, secure AI support for Australian small businesses.</td></tr></table></td></tr></table></body></html>`;
+}
+
+function starterGuideEmailHtml(name) {
+  const safeName = escapeHtml(name || 'there');
+  return `<!doctype html><html><body style="margin:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#14253d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="padding:28px 36px;background:#0b4c5c"><img src="https://securebusinessai.com.au/assets/secure-business-ai-horizontal.png" width="230" alt="Secure Business AI" style="display:block;max-width:230px;height:auto" /></td></tr><tr><td style="padding:36px"><p style="margin:0 0 12px;font-size:13px;font-weight:bold;letter-spacing:1px;color:#2f74ff">AI STARTER GUIDE</p><h1 style="margin:0 0 18px;font-size:28px;line-height:1.2;color:#14253d">Your guide is attached.</h1><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Hi ${safeName},</p><p style="margin:0 0 16px;font-size:16px;line-height:1.6">Thank you for your purchase. Your <strong>AI Starter Guide</strong> is attached to this email as a PDF, ready to read on any device.</p><p style="margin:0 0 24px;font-size:16px;line-height:1.6">A good way to use it: read it once end to end, then use the Opportunity Map and Self-Assessment Checklist near the back to turn it into a shortlist of practical next steps for your business.</p><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:6px;background:#2f74ff"><a href="https://securebusinessai.com.au/ai-website-review" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none">See where your website is leaking enquiries</a></td></tr></table><p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#516277">If the attachment does not open, reply to this email and we will send it another way.</p></td></tr><tr><td style="padding:20px 36px;background:#eef4f7;font-size:13px;line-height:1.5;color:#516277">Secure Business AI<br />Practical, secure AI support for Australian small businesses.</td></tr></table></td></tr></table></body></html>`;
+}
+
+// Deliver the fixed Starter Guide PDF for a paid $47 checkout. Idempotent: a
+// row in starter_guide_orders marks delivery, so a Stripe retry will not send a
+// second copy. The customer email is the critical step; if it fails we throw so
+// Stripe retries, and the row is only marked delivered after a successful send.
+async function deliverStarterGuide(session, res) {
+  const customerEmail = session.customer_details?.email || session.customer_email;
+  if (!customerEmail) return res.status(200).json({ received: true });
+  const customerName = session.customer_details?.name || '';
+  const sessionId = session.id;
+
+  const existing = await supabase(
+    `${STARTER_GUIDE_TABLE}?stripe_session_id=eq.${encodeURIComponent(sessionId)}&select=delivered_at`
+  );
+  if (existing.length && existing[0].delivered_at) return res.status(200).json({ received: true });
+
+  const emailResponse = await sendEmail({
+    from: FROM_EMAIL,
+    to: [customerEmail],
+    reply_to: DESTINATION_EMAIL,
+    subject: 'Your AI Starter Guide (PDF attached)',
+    text: `Hi ${customerName || 'there'},\n\nThank you for your purchase. Your AI Starter Guide is attached to this email as a PDF.\n\nA good way to use it: read it once end to end, then use the Opportunity Map and Self-Assessment Checklist near the back to turn it into a shortlist of practical next steps for your business.\n\nIf the attachment does not open, reply to this email and we will send it another way.\n\nSecure Business AI\nhttps://securebusinessai.com.au`,
+    html: starterGuideEmailHtml(customerName),
+    attachments: [{ filename: starterGuidePdf.filename, content: starterGuidePdf.base64 }],
+  });
+  if (!emailResponse.ok) throw new Error('Starter Guide email failed');
+
+  // Record the sale and mark delivered (upsert on the session id primary key).
+  await supabase(STARTER_GUIDE_TABLE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      stripe_session_id: sessionId,
+      customer_email: customerEmail,
+      customer_name: customerName || null,
+      amount_total: session.amount_total,
+      currency: session.currency,
+      delivered_at: new Date().toISOString(),
+    }),
+  });
+
+  // Best-effort internal notification: the customer already has the guide.
+  try {
+    const notify = await sendEmail({
+      from: FROM_EMAIL,
+      to: [DESTINATION_EMAIL],
+      reply_to: customerEmail,
+      subject: `AI Starter Guide sold: ${customerName || customerEmail}`,
+      text: `A $47 AI Starter Guide payment was received and the PDF was emailed.\n\nCustomer: ${customerName || 'Not provided'}\nEmail: ${customerEmail}\nStripe session: ${sessionId}`,
+    });
+    if (!notify.ok) console.error('Starter Guide internal notification failed for session', sessionId);
+  } catch (_notifyError) {
+    console.error('Starter Guide internal notification error for session', sessionId);
+  }
+
+  return res.status(200).json({ received: true });
 }
 
 function readRawBody(req) {
@@ -47,7 +112,19 @@ module.exports = async (req, res) => {
     const event = JSON.parse(raw.toString('utf8'));
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) return res.status(200).json({ received: true });
     const session = event.data?.object;
-    if (session?.payment_status !== 'paid' || session?.metadata?.product !== 'ai_readiness_pack' || !session.metadata.order_id) return res.status(200).json({ received: true });
+    if (session?.payment_status !== 'paid') return res.status(200).json({ received: true });
+
+    const product = session?.metadata?.product;
+
+    // AI Starter Guide: fixed PDF deliverable. Identify by the payment link's
+    // product metadata (snapshotted onto the session), with the $47 AUD amount
+    // as a fallback in case a link is ever created without that metadata.
+    if (product === 'ai_starter_guide' || (!product && session.amount_total === STARTER_GUIDE_AMOUNT && session.currency === 'aud')) {
+      return await deliverStarterGuide(session, res);
+    }
+
+    // AI Readiness Pack: workspace-link flow (order created before checkout).
+    if (product !== 'ai_readiness_pack' || !session.metadata.order_id) return res.status(200).json({ received: true });
     const orderId = session.metadata.order_id;
     const existing = await supabase(`${SUPABASE_TABLE}?id=eq.${encodeURIComponent(orderId)}&select=status,customer_name,access_email_sent_at`);
     if (!existing.length) return res.status(200).json({ received: true });

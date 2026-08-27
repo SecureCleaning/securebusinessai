@@ -10,7 +10,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "docs" / "AI_Starter_Guide_Draft.docx"
+OUT = ROOT / "docs" / "AI_Starter_Guide.docx"
 LOGO = ROOT / "assets" / "secure-business-ai-stacked.png"
 
 NAVY = RGBColor(16, 32, 51)
@@ -120,7 +120,7 @@ def configure_document(doc):
         style.paragraph_format.line_spacing = 1.25
 
     footer = section.footer.paragraphs[0]
-    footer.text = "Secure Business AI | AI Starter Guide Draft"
+    footer.text = "Secure Business AI  |  AI Starter Guide  |  securebusinessai.com.au"
     footer.runs[0].font.size = Pt(9)
     footer.runs[0].font.color.rgb = MUTED
     add_page_number(section.footer.add_paragraph())
@@ -252,11 +252,11 @@ def add_cover(doc):
     )
     add_callout(
         doc,
-        "Draft note",
-        "This is a working Word draft for review and editing. It is written to become a 30-50 page designed PDF after content approval, layout design, and final examples are added.",
+        "How to use this guide",
+        "Read it once end to end, then use the Opportunity Map and Self-Assessment Checklist near the back to turn it into a shortlist of practical next steps for your business.",
     )
     add_para(doc, "Prepared by Secure Business AI", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, after=0)
-    add_para(doc, "Draft version 0.1", color=MUTED, align=WD_ALIGN_PARAGRAPH.CENTER, after=0)
+    add_para(doc, "Practical, secure AI for Australian small businesses", color=MUTED, align=WD_ALIGN_PARAGRAPH.CENTER, after=0)
     doc.add_page_break()
 
 

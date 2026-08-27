@@ -1,0 +1,11 @@
+# Keep development-only files out of the public deployment.
+# The site is served from the repo root (outputDirectory "."), so anything left
+# here would otherwise be downloadable, e.g. /supabase/page_content.sql. None of
+# these are needed by the live site or its serverless functions at runtime.
+docs/
+scripts/
+supabase/
+.github/
+node_modules/
+dist/
+coverage/
