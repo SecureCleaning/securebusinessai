@@ -51,7 +51,6 @@ const files = [
   'content-overrides.js',
   'admin.html',
   'admin-orders.html',
-  'docs/generated/ai-website-review-jimsmowing-sample-2026-05-13.md',
 ];
 
 fs.rmSync(dist, { recursive: true, force: true });

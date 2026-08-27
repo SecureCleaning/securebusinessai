@@ -1,9 +1,9 @@
 # Keep development-only files out of the public deployment.
 # The site is served from the repo root (outputDirectory "."), so anything left
-# here would otherwise be downloadable, e.g. /supabase/page_content.sql. None of
-# these are needed by the live site or its serverless functions at runtime.
+# here would otherwise be downloadable, e.g. /supabase/page_content.sql or the
+# Starter Guide source in docs/. None of these are needed by the live site.
+# NOTE: scripts/ must stay — Vercel runs `npm run build` (scripts/build-static.js).
 docs/
-scripts/
 supabase/
 .github/
 node_modules/
