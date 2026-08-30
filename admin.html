@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Content Admin | Secure Business AI</title>
+    <title>Admin | Secure Business AI</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
     <style>
-      .admin-wrap { width: min(860px, calc(100% - 32px)); margin: 40px auto; }
+      .admin-wrap { width: min(1080px, calc(100% - 32px)); margin: 40px auto; }
       .admin-card { background: rgba(255,255,255,0.95); border: 1px solid var(--line); border-radius: 20px; padding: 26px; box-shadow: var(--shadow); }
       .admin-field { display: grid; gap: 8px; margin-bottom: 18px; }
       .admin-field label { font-size: 13px; font-weight: 700; color: var(--muted); }
@@ -23,6 +23,21 @@
       .admin-status.success { color: #18794e; }
       .admin-status.error { color: #c23b3b; }
       .admin-hint { color: var(--muted); font-size: 14px; line-height: 1.6; }
+      .section-title { font-size: 1.35rem; margin: 0 0 4px; }
+      .section-lead { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+      .tabs { display: flex; gap: 6px; }
+      .tab { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 9px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+      .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .summary { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 18px; }
+      .pill { padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: 13px; font-weight: 700; }
+      table.orders { width: 100%; border-collapse: collapse; font-size: 14px; }
+      table.orders th, table.orders td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      table.orders th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+      .badge2 { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; background: #eef2f7; color: var(--text); }
+      .badge2.paid, .badge2.intake_submitted, .badge2.draft_ready, .badge2.delivered { background: #e7f4ec; color: #18794e; }
+      .badge2.checkout_started { background: #fdf0e3; color: #a15b16; }
+      .yes { color: #18794e; font-weight: 700; } .no { color: var(--muted); }
+      .muted { color: var(--muted); }
       .hidden { display: none; }
     </style>
   </head>
@@ -37,10 +52,10 @@
     <main>
       <div class="admin-wrap">
         <section id="loginCard" class="admin-card">
-          <p class="eyebrow">Content Admin</p>
-          <h1 style="font-size:2rem;margin:0 0 10px;">Edit your website copy.</h1>
-          <p class="admin-hint">Enter the admin password to edit page content. Changes save to your content store and appear on the live site within about a minute.</p>
-          <form id="loginForm" class="admin-field" style="margin-top:16px;">
+          <p class="eyebrow">Admin</p>
+          <h1 style="font-size:2rem;margin:0 0 10px;">Secure Business AI admin.</h1>
+          <p class="admin-hint">One login for everything: edit page content and manage orders. Enter the admin password to continue.</p>
+          <form id="loginForm" class="admin-field" style="margin-top:16px;max-width:420px;">
             <label for="password">Admin password</label>
             <input type="password" id="password" autocomplete="current-password" required />
             <div class="admin-row">
@@ -50,23 +65,61 @@
           </form>
         </section>
 
-        <section id="editorCard" class="admin-card hidden">
+        <section id="dashCard" class="admin-card hidden">
           <div class="admin-bar">
             <div class="admin-row" style="justify-content:space-between;">
+              <div class="tabs">
+                <button type="button" class="tab active" data-tab="content">Content</button>
+                <button type="button" class="tab" data-tab="orders">Orders</button>
+              </div>
+              <button type="button" id="logoutBtn" class="button secondary">Sign out</button>
+            </div>
+          </div>
+
+          <!-- CONTENT TAB -->
+          <div id="tab-content" class="tab-panel">
+            <h2 class="section-title">Website content</h2>
+            <p class="section-lead">Edit page copy. Changes save to your content store and appear on the live site within about a minute.</p>
+            <div class="admin-row" style="justify-content:space-between;margin-bottom:12px;">
               <div class="admin-row" style="gap:10px;">
                 <strong>Editing:</strong>
                 <select id="pageSelect"></select>
               </div>
-              <div class="admin-row">
-                <button type="button" id="saveBtn" class="button primary">Save page</button>
-                <button type="button" id="logoutBtn" class="button secondary">Sign out</button>
-              </div>
+              <button type="button" id="saveBtn" class="button primary">Save page</button>
             </div>
-            <p id="editStatus" class="admin-status" style="margin-top:8px;" aria-live="polite"></p>
+            <p id="editStatus" class="admin-status" style="margin-bottom:12px;" aria-live="polite"></p>
+            <div id="fields"></div>
+            <p class="admin-hint">Leave a field blank to keep the page's built-in default (shown as the placeholder). Saving a blank field reverts it to the default.</p>
           </div>
 
-          <div id="fields"></div>
-          <p class="admin-hint">Leave a field blank to keep the page's built-in default (shown as the placeholder). Saving a blank field reverts it to the default.</p>
+          <!-- ORDERS TAB -->
+          <div id="tab-orders" class="tab-panel hidden">
+            <h2 class="section-title">AI Readiness Pack orders</h2>
+            <p class="section-lead">Order status, delivery tools, and cleanup for the paid workflows.</p>
+            <div id="summary" class="summary"></div>
+            <div class="admin-row" style="gap:8px;margin:4px 0 14px;">
+              <label for="sampleEmail" style="font-size:13px;font-weight:700;">Email a sample Starter Guide to</label>
+              <input type="email" id="sampleEmail" value="info@securebusinessai.com.au" style="border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;min-width:260px;" />
+              <button type="button" id="sampleBtn" class="button secondary">Send sample</button>
+              <p id="sampleStatus" class="admin-status" aria-live="polite"></p>
+            </div>
+            <div class="admin-row" style="gap:10px;margin-bottom:10px;">
+              <button type="button" id="purgeBtn" class="button secondary">Purge old drafts</button>
+              <button type="button" id="refreshBtn" class="button secondary">Refresh</button>
+              <p id="listStatus" class="admin-status"></p>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="orders">
+                <thead>
+                  <tr>
+                    <th>Created</th><th>Business</th><th>Website</th><th>Customer</th>
+                    <th>Status</th><th>Emailed</th><th>Intake</th><th>Link expires</th>
+                  </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -91,44 +144,77 @@
 
       var PW = '';
       var store = {}; // "slug|key" -> content
+      var ordersLoaded = false;
 
       var loginCard = document.getElementById('loginCard');
-      var editorCard = document.getElementById('editorCard');
+      var dashCard = document.getElementById('dashCard');
       var loginForm = document.getElementById('loginForm');
       var loginStatus = document.getElementById('loginStatus');
       var editStatus = document.getElementById('editStatus');
       var pageSelect = document.getElementById('pageSelect');
       var fieldsEl = document.getElementById('fields');
+      var listStatus = document.getElementById('listStatus');
 
-      function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
       function collapse(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
+      function fmtDate(s) { if (!s) return ''; var d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString('en-AU') + ' ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); }
 
-      function api(action, extra) {
+      function apiContent(action, extra) {
         return fetch('/api/admin-content', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PW },
           body: JSON.stringify(Object.assign({ action: action }, extra || {}))
         }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
       }
+      function apiOrders(action, extra) {
+        return fetch('/api/admin-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PW },
+          body: JSON.stringify(Object.assign({ action: action }, extra || {}))
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+      }
 
+      // ---- Login ----
       loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
         PW = document.getElementById('password').value;
         loginStatus.textContent = 'Checking...';
         loginStatus.className = 'admin-status';
-        api('login').then(function (res) {
+        apiContent('login').then(function (res) {
           if (!res.ok) { loginStatus.textContent = (res.data && res.data.error) || 'Sign in failed.'; loginStatus.className = 'admin-status error'; PW = ''; return; }
-          return api('list').then(function (r2) {
+          return apiContent('list').then(function (r2) {
             store = {};
             ((r2.data && r2.data.items) || []).forEach(function (row) { store[row.page + '|' + row.section_key] = row.content; });
             buildPageSelect();
             loginCard.classList.add('hidden');
-            editorCard.classList.remove('hidden');
+            dashCard.classList.remove('hidden');
             loadPage();
           });
         }).catch(function () { loginStatus.textContent = 'Something went wrong.'; loginStatus.className = 'admin-status error'; });
       });
 
+      document.getElementById('logoutBtn').addEventListener('click', function () {
+        PW = ''; store = {}; ordersLoaded = false;
+        dashCard.classList.add('hidden');
+        loginCard.classList.remove('hidden');
+        document.getElementById('password').value = '';
+        loginStatus.textContent = '';
+      });
+
+      // ---- Tabs ----
+      var tabs = document.querySelectorAll('.tab');
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () {
+          tabs.forEach(function (x) { x.classList.remove('active'); });
+          t.classList.add('active');
+          var name = t.getAttribute('data-tab');
+          document.getElementById('tab-content').classList.toggle('hidden', name !== 'content');
+          document.getElementById('tab-orders').classList.toggle('hidden', name !== 'orders');
+          if (name === 'orders' && !ordersLoaded) { ordersLoaded = true; loadOrders(); }
+        });
+      });
+
+      // ---- Content editor ----
       function buildPageSelect() {
         pageSelect.innerHTML = PAGES.map(function (p) { return '<option value="' + p.slug + '">' + p.label + '</option>'; }).join('');
       }
@@ -176,7 +262,7 @@
         });
         editStatus.textContent = 'Saving...';
         editStatus.className = 'admin-status';
-        api('save', { items: items }).then(function (res) {
+        apiContent('save', { items: items }).then(function (res) {
           if (!res.ok) { editStatus.textContent = (res.data && res.data.error) || 'Save failed.'; editStatus.className = 'admin-status error'; return; }
           items.forEach(function (i) {
             if (i.content) store[i.page + '|' + i.section_key] = i.content;
@@ -187,12 +273,63 @@
         }).catch(function () { editStatus.textContent = 'Something went wrong.'; editStatus.className = 'admin-status error'; });
       });
 
-      document.getElementById('logoutBtn').addEventListener('click', function () {
-        PW = ''; store = {};
-        editorCard.classList.add('hidden');
-        loginCard.classList.remove('hidden');
-        document.getElementById('password').value = '';
-        loginStatus.textContent = '';
+      // ---- Orders ----
+      function loadOrders() {
+        listStatus.textContent = 'Loading orders...';
+        listStatus.className = 'admin-status';
+        apiOrders('list').then(function (res) {
+          if (!res.ok) { listStatus.textContent = (res.data && res.data.error) || 'Could not load orders.'; listStatus.className = 'admin-status error'; return; }
+          var orders = (res.data && res.data.orders) || [];
+          renderOrders(orders);
+          listStatus.textContent = orders.length + ' orders';
+          listStatus.className = 'admin-status';
+        }).catch(function () { listStatus.textContent = 'Something went wrong.'; listStatus.className = 'admin-status error'; });
+      }
+
+      function renderOrders(orders) {
+        var counts = {};
+        orders.forEach(function (o) { counts[o.status] = (counts[o.status] || 0) + 1; });
+        document.getElementById('summary').innerHTML = Object.keys(counts).map(function (k) {
+          return '<span class="pill">' + esc(k) + ': ' + counts[k] + '</span>';
+        }).join('') || '<span class="muted">No orders yet.</span>';
+
+        document.getElementById('rows').innerHTML = orders.map(function (o) {
+          var web = o.website_url ? '<a href="' + esc(o.website_url) + '" target="_blank" rel="noopener">' + esc(o.website_url.replace(/^https?:\/\//, '')) + '</a>' : '';
+          return '<tr>' +
+            '<td class="muted">' + esc(fmtDate(o.created_at)) + '</td>' +
+            '<td>' + esc(o.business_name) + '</td>' +
+            '<td>' + web + '</td>' +
+            '<td>' + esc(o.customer_name) + '<br /><span class="muted">' + esc(o.customer_email) + '</span></td>' +
+            '<td><span class="badge2 ' + esc(o.status) + '">' + esc(o.status) + '</span></td>' +
+            '<td>' + (o.workspace_emailed ? '<span class="yes">yes</span>' : '<span class="no">no</span>') + '</td>' +
+            '<td>' + (o.intake_filled ? '<span class="yes">yes</span>' : '<span class="no">no</span>') + '</td>' +
+            '<td class="muted">' + esc(fmtDate(o.access_expires_at)) + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      document.getElementById('refreshBtn').addEventListener('click', loadOrders);
+
+      document.getElementById('purgeBtn').addEventListener('click', function () {
+        if (!confirm('Delete unpaid draft orders older than 7 days? Paid and completed orders are never affected.')) return;
+        listStatus.textContent = 'Purging...'; listStatus.className = 'admin-status';
+        apiOrders('purge_abandoned').then(function (res) {
+          if (!res.ok) { listStatus.textContent = (res.data && res.data.error) || 'Purge failed.'; listStatus.className = 'admin-status error'; return; }
+          var n = (res.data && res.data.purged) || 0;
+          listStatus.textContent = 'Removed ' + n + ' abandoned draft' + (n === 1 ? '' : 's') + '.';
+          loadOrders();
+        }).catch(function () { listStatus.textContent = 'Something went wrong.'; listStatus.className = 'admin-status error'; });
+      });
+
+      document.getElementById('sampleBtn').addEventListener('click', function () {
+        var sampleStatus = document.getElementById('sampleStatus');
+        var email = document.getElementById('sampleEmail').value.trim();
+        sampleStatus.textContent = 'Sending...'; sampleStatus.className = 'admin-status';
+        apiOrders('send_sample', { email: email }).then(function (res) {
+          if (!res.ok) { sampleStatus.textContent = (res.data && res.data.error) || 'Send failed.'; sampleStatus.className = 'admin-status error'; return; }
+          sampleStatus.textContent = 'Sent to ' + ((res.data && res.data.sentTo) || email) + '.';
+          sampleStatus.className = 'admin-status success';
+        }).catch(function () { sampleStatus.textContent = 'Something went wrong.'; sampleStatus.className = 'admin-status error'; });
       });
     </script>
   </body>
